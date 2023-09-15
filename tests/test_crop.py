@@ -5,6 +5,12 @@ import pathlib
 path = pathlib.Path(__file__).parent
 
 
+def load_model():
+    return cobra.io.read_sbml_model(
+        path.joinpath('example_model.xml').__str__()
+    )
+
+
 def test_no_grow_e():
     # B + E  nutrient condition is no growth
     model = cobra.io.read_sbml_model(
