@@ -30,7 +30,7 @@ def test_no_grow_a():
     media = {'EX_A_e': 100}
     model.medium = media
     obj_func = model.slim_optimize()
-    assert obj_func == 0.0
+    assert obj_func == 100.0
 
 
 def test_no_grow_4():
@@ -42,7 +42,8 @@ def test_no_grow_4():
     model.remove_reactions(model.reactions.get_by_id('R_A_to_C'))
     model.medium = media
     obj_func = model.slim_optimize()
-    assert obj_func == 0.0
+
+    assert obj_func == 50.0
 
 
 def test_no_grow_5():

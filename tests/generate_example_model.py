@@ -124,6 +124,8 @@ fullS = pd.DataFrame(data, columns=rxns, index=mets, dtype='int64').fillna(0)
 
 order = ['EX_A', 'R_A_to_B', 'R_A_to_C', 'R_BE_to_D', 'EX_E', 'R_BC_to_F',
          'R_C_to_D', 'EX_D', 'SINK_F', 'EX_C', ]
+
 stoich_matrix = stoich_matrix[order]
 
 (stoich_matrix.values == fullS.values).all()
+print(stoich_matrix)
