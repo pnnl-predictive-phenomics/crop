@@ -10,9 +10,8 @@ def load_model():
         path.joinpath('example_model.xml').__str__()
     )
 
-
 def test_no_grow_e():
-    # B + E  nutrient condition is no growth
+    # E  nutrient condition is no growth
     model = cobra.io.read_sbml_model(
         path.joinpath('example_model.xml').__str__()
     )
@@ -21,6 +20,47 @@ def test_no_grow_e():
     obj_func = model.slim_optimize()
     assert obj_func == 0.0
 
+def test_no_grow_b():
+    """B  nutrient condition is no growth"""
+    model = cobra.io.read_sbml_model(
+        path.joinpath('example_model.xml').__str__()
+    )
+    media = {'EX_B_e': 100}
+    model.medium = media
+    obj_func = model.slim_optimize()
+    assert obj_func == 0.0
+
+    
+
+def test_no_grow_b_and_e():
+    # B + E  nutrient condition is no growth
+    model = cobra.io.read_sbml_model(
+        path.joinpath('example_model.xml').__str__()
+    )
+    media = {'EX_E_e': 100, 'EX_B_e': 100}
+    model.medium = media
+    obj_func = model.slim_optimize()
+    assert obj_func == 0.0
+
+def test_grow_a_and_e():
+    """A + E  nutrient condition is growth"""
+    model = cobra.io.read_sbml_model(
+        path.joinpath('example_model.xml').__str__()
+    )
+    media = {'EX_E_e': 100, 'EX_A_e': 100}
+    model.medium = media
+    obj_func = model.slim_optimize()
+    assert obj_func > 0.0
+
+def test_grow_a_and_b():
+    """A + B  nutrient condition is growth"""
+    model = cobra.io.read_sbml_model(
+        path.joinpath('example_model.xml').__str__()
+    )
+    media = {'EX_B_e': 100, 'EX_A_e': 100}
+    model.medium = media
+    obj_func = model.slim_optimize()
+    assert obj_func > 0.0
 
 def test_no_grow_a():
     # A alone is growth
