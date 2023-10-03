@@ -62,7 +62,7 @@ def test_grow_a_and_b():
     obj_func = model.slim_optimize()
     assert obj_func > 0.0
 
-def test_no_grow_a():
+def test_grow_a():
     # A alone is growth
     model = cobra.io.read_sbml_model(
         path.joinpath('example_model.xml').__str__()
