@@ -36,9 +36,9 @@
     </listOfParameters>
     <listOfReactions>
       <reaction metaid="meta_R_EX_A_e" sboTerm="SBO:0000627" id="R_EX_A_e" name=" exchange" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
-        <listOfReactants>
+        <listOfProducts>
           <speciesReference species="M_A_e" stoichiometry="1" constant="true"/>
-        </listOfReactants>
+        </listOfProducts>
       </reaction>
       <reaction metaid="meta_R_EX_C_e" sboTerm="SBO:0000627" id="R_EX_C_e" name=" exchange" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
         <listOfReactants>
@@ -51,9 +51,9 @@
         </listOfReactants>
       </reaction>
       <reaction metaid="meta_R_EX_E_e" sboTerm="SBO:0000627" id="R_EX_E_e" name=" exchange" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
-        <listOfReactants>
+        <listOfProducts>
           <speciesReference species="M_E_e" stoichiometry="1" constant="true"/>
-        </listOfReactants>
+        </listOfProducts>
       </reaction>
       <reaction metaid="meta_R_EX_F_e" sboTerm="SBO:0000627" id="R_EX_F_e" name=" exchange" reversible="true" fast="false" fbc:lowerFluxBound="cobra_default_lb" fbc:upperFluxBound="cobra_default_ub">
         <listOfReactants>
