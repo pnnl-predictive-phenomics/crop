@@ -235,11 +235,11 @@
 "gene_reaction_rule":""
 },
 {
-"id":"C_to_F",
+"id":"C_to_D",
 "name":"",
 "metabolites":{
 "C":-1.0,
-"F":1.0
+"D":1.0
 },
 "lower_bound":-1000.0,
 "upper_bound":1000.0,
