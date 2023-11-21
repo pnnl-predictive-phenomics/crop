@@ -26,57 +26,37 @@ data = {'R_1': pd.Series({'A': 1, 'A_ext': -1}),
 
 model = cobra.Model('example_model')
 
-A = cobra.Metabolite('A_c', compartment='c')
-A_e = cobra.Metabolite('A_e', compartment='e')
-B = cobra.Metabolite('B_c', compartment='c')
-C = cobra.Metabolite('C_c', compartment='c')
-C_e = cobra.Metabolite('C_e', compartment='e')
-D = cobra.Metabolite('D_c', compartment='c')
-D_e = cobra.Metabolite('D_e', compartment='e')
-E = cobra.Metabolite('E_c', compartment='c')
-E_e = cobra.Metabolite('E_e', compartment='e')
-F = cobra.Metabolite('F_c', compartment='c')
-F_e = cobra.Metabolite('F_e', compartment='e')
 
-model.add_metabolites([A, B, C, D, E, F, A_e, C_e, D_e, E_e, F_e])
+def add_importer(source, target, name):
 
-model.add_boundary(model.metabolites.get_by_id("A_e"), type="exchange")
-model.add_boundary(model.metabolites.get_by_id("C_e"), type="exchange")
-model.add_boundary(model.metabolites.get_by_id("D_e"), type="exchange")
-model.add_boundary(model.metabolites.get_by_id("E_e"), type="exchange")
-model.add_boundary(model.metabolites.get_by_id("F_e"), type="exchange")
+    rxn = cobra.Reaction(f'im_{name}')
+    rxn.add_metabolites({
+        source: -1.0,
+        target: 1.0,
+    })
+    return rxn
 
-ex1 = cobra.Reaction('EX_A')
-ex1.add_metabolites({
-    A_e: -1.0,
-    A: 1.0,
-})
 
-ex2 = cobra.Reaction('EX_C')
-ex2.add_metabolites({
-    C: -1.0,
-    C_e: 1.0,
+def add_metabolite(name):
+    metabolite = cobra.Metabolite(f'{name}_c', compartment='c')
+    ext_metabolite = cobra.Metabolite(f'{name}_e', compartment='e')
+    model.add_metabolites([metabolite, ext_metabolite])
+    rxn = add_importer(ext_metabolite, metabolite, name)
+    model.add_boundary(ext_metabolite, type="exchange")
+    model.add_reactions([rxn])
+    return [metabolite, ext_metabolite]
 
-})
 
-ex3 = cobra.Reaction('EX_D')
-ex3.add_metabolites({
-    D: -1.0,
-    D_e: 1.0
+A, A_e = add_metabolite('A')
+B, B_e = add_metabolite('B')
+C, C_e = add_metabolite('C')
+D, D_e = add_metabolite('D')
+E, E_e = add_metabolite('E')
+F, F_e = add_metabolite('F')
 
-})
 
-ex4 = cobra.Reaction('EX_E')
-ex4.add_metabolites({
-    E_e: -1.0,
-    E: 1.0,
-})
+model.add_boundary(model.metabolites.get_by_id("F_e"), type="sink")
 
-ex5 = cobra.Reaction('SINK_F')
-ex5.add_metabolites({
-    F: -1.0,
-    F_e: 1.0,
-})
 
 r1 = cobra.Reaction('R_A_to_B')
 r1.add_metabolites({
@@ -110,22 +90,30 @@ r5.add_metabolites({
     D: 1.0,
 })
 
-model.add_reactions([ex1, ex2, ex3, ex4, ex5, r1, r2, r3, r4, r5])
-model.objective = model.reactions.get_by_id('EX_D')
+r6 = cobra.Reaction('R_D_to_D_ex')
+r6.add_metabolites({
+    D: -1.0,
+    D_e: 1.0,
+})
+model.add_reactions([r1, r2, r3, r4, r5 ,r6])
+model.objective = model.reactions.get_by_id('EX_D_e')
 
 write_sbml_model(model, filename='example_model.xml')
 report = validate_sbml_model(filename='example_model.xml')
 pprint(report)
 
+for rxn in model.reactions:
+    print(rxn)
+quit()
+
 
 stoich_matrix = create_stoichiometric_matrix(model, 'DataFrame')
 
+order = ['im_A', 'R_A_to_B', 'R_A_to_C', 'R_BE_to_D', 'im_E', 'R_BC_to_F',
+         'R_C_to_D', 'im_D', 'SK_F_e', 'im_C', ]
 fullS = pd.DataFrame(data, columns=rxns, index=mets, dtype='int64').fillna(0)
+fullS.columns = order
 
-order = ['EX_A', 'R_A_to_B', 'R_A_to_C', 'R_BE_to_D', 'EX_E', 'R_BC_to_F',
-         'R_C_to_D', 'EX_D', 'SINK_F', 'EX_C', ]
 
 stoich_matrix = stoich_matrix[order]
 
-(stoich_matrix.values == fullS.values).all()
-print(stoich_matrix)
