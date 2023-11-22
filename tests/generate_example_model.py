@@ -40,8 +40,9 @@ def add_importer(source, target, name):
 def add_metabolite(name):
     metabolite = cobra.Metabolite(f'{name}_c', compartment='c')
     ext_metabolite = cobra.Metabolite(f'{name}_e', compartment='e')
-    model.add_metabolites([metabolite, ext_metabolite])
     rxn = add_importer(ext_metabolite, metabolite, name)
+
+    model.add_metabolites([metabolite, ext_metabolite])
     model.add_boundary(ext_metabolite, type="exchange")
     model.add_reactions([rxn])
     return [metabolite, ext_metabolite]
@@ -95,7 +96,13 @@ r6.add_metabolites({
     D: -1.0,
     D_e: 1.0,
 })
-model.add_reactions([r1, r2, r3, r4, r5 ,r6])
+
+r7 = cobra.Reaction('R_F_to_F_ex')
+r7.add_metabolites({
+    F: -1.0,
+    F_e: 1.0,
+})
+model.add_reactions([r1, r2, r3, r4, r5, r6, r7])
 model.objective = model.reactions.get_by_id('EX_D_e')
 
 write_sbml_model(model, filename='example_model.xml')
