@@ -11,12 +11,19 @@ def load_model():
     )
 
 
-class TestClass:
+class TestExampleModel:
+    """ Tests that the example model behaves according to the conditions that we want.
+
+    Basically this is step 1 in the process. We have a model that fails in a designed way. That way
+    as we develop crop, we can have a "perfect" model that we know behaves the way we would like. We found one
+    example already where the model grew but we expected it not to, thus we added a test to make sure.
+
+    """
     # def __init__(self):
     model = load_model()
 
     def test_no_grow_e(self):
-        # E  nutrient condition is no growth
+        """ E  nutrient condition is no growth """
 
         media = {'EX_E_e': 100}
         with self.model as m:
@@ -34,7 +41,13 @@ class TestClass:
             assert obj_func == 0.0
 
     def test_no_grow_b_and_e(self):
-        # B + E  nutrient condition is no growth
+        """ B + E  nutrient condition is no growth
+
+        This is the function that we expected to fail, but turns out the model can convert to double growth.
+
+        Returns:
+
+        """
 
         media = {'EX_E_e': 100, 'EX_B_e': 100}
         with self.model as m:
