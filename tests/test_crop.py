@@ -1,92 +1,122 @@
-"""Test functionalities of gap filling."""
-import cobra.io
-import pathlib
-
-path = pathlib.Path(__file__).parent
+import pytest
+import pandas as pd
+import optlang as op
 
 
-def load_model():
-    return cobra.io.read_sbml_model(
-        path.joinpath('example_model.xml').__str__()
-    )
+import crop
+from crop import PhenotypeObservation
+from crop import get_steady_state_dual_constraint
+from crop import model_from_stoich_matrix
+
+# fixtures for testing 
+
+# copied from notebook - double check!!
+
+# stoichiometry 
+S_index = ['A_int', 'B_int', 'C_int']
+S_dict = {'A_SRC->A_int': [1,0,0],
+          'A_int->B_int': [-1,1,0],
+          'B_int->C_int': [0,-1,1],
+          'C_int->C_SNK': [0,0,-1],
+          'A_int->C_int': [-1,0,1],
+          'B_SRC->B_int': [0,1,0],
+          }
+
+S_table = pd.DataFrame( S_dict ,index=S_index)
+mets, rxns = S_table.index, S_table.columns
+n_mets = len(mets)
+n_rxns = len(rxns)
 
 
-class TestClass:
-    # def __init__(self):
-    model = load_model()
+# constant Omega
+upper_flux_bound = 1e3
 
-    def test_no_grow_e(self):
-        # E  nutrient condition is no growth
+# flux bounds
+min_growth_flux = 10
+max_nogrowth_flux = 5
 
-        media = {'EX_E_e': 100}
-        with self.model as m:
-            m.medium = media
-            obj_func = m.slim_optimize()
-            assert obj_func == 0.0
+# media conditions
+A_not_B_medium = {
+ 'A_SRC->A_int': min_growth_flux,
+ 'B_SRC->B_int': 0.0
+ }
 
-    def test_no_grow_b(self):
-        """B  nutrient condition is no growth"""
+B_not_A_medium = {
+ 'A_SRC->A_int': 0.0,
+ 'B_SRC->B_int': min_growth_flux
+ }
 
-        media = {'EX_B_e': 100}
-        with self.model as m:
-            m.medium = media
-            obj_func = m.slim_optimize()
-            assert obj_func == 0.0
+# knockout reactions
+reaction_knockouts = {
+ 'A_int->C_int': True,
+ }
 
-    def test_no_grow_b_and_e(self):
-        # B + E  nutrient condition is no growth
+### IN PROGRESS
+# list of U_nogrowth and U_growth (reaction size)
+U_growth = {rxn_id:upper_flux_bound for rxn_id in rxns}
+U_nogrowth = {rxn_id:upper_flux_bound for rxn_id in rxns}
+U_growth['A_SRC->A_int'] = min_growth_flux
+U_growth['B_SRC->B_int'] = 0
+growth_objective = {rxn_id:1 if rxn_id=='C_int->C_SNK' else 0 for rxn_id in rxns}
+upper_flux_bounds = {rxn_id:0 for rxn_id in rxns}
+lower_flux_bounds = {rxn_id:0 for rxn_id in rxns}
 
-        media = {'EX_E_e': 100, 'EX_B_e': 100}
-        with self.model as m:
-            m.medium = media
-            obj_func = m.slim_optimize()
-            assert obj_func == 200.0
+phenotype_observations = {
+    'A_not_B': PhenotypeObservation(medium=A_not_B_medium, reaction_knockouts={}, gene_knockouts=dict(), growth_phenotype=True),
+    'B_not_A': PhenotypeObservation(medium=B_not_A_medium, reaction_knockouts={}, gene_knockouts=dict(), growth_phenotype=True),
+    'A_not_B_ko_AC':PhenotypeObservation(medium=A_not_B_medium, reaction_knockouts=reaction_knockouts, gene_knockouts=dict(), growth_phenotype=False),
+    'B_not_A_ko_AC':PhenotypeObservation(medium=B_not_A_medium, reaction_knockouts=reaction_knockouts, gene_knockouts=dict(), growth_phenotype=True)
+}
 
-    def test_grow_a_and_e(self):
-        """A + E  nutrient condition is growth"""
-        media = {'EX_E_e': 100, 'EX_A_e': 100}
-        with self.model as m:
-            m.medium = media
-            obj_func = m.slim_optimize()
-            assert obj_func > 0.0
+cobra_model = model_from_stoich_matrix(S_table, "ABC_toy_model_3", obj=growth_objective, )
 
-    def test_grow_a_and_b(self):
-        """A + B  nutrient condition is growth"""
+# list of weights (reaction size)
+likelihoods = [0.5 for _ in rxns]
 
-        media = {'EX_B_e': 100, 'EX_A_e': 100}
-        with self.model as m:
-            m.medium = media
-            obj_func = m.slim_optimize()
-            assert obj_func > 0.0
+# list of z (reaction size)
+reaction_indicator = {rxn_id:op.Variable(f"z_{rxn_id}", type="binary") for rxn_id in rxns}
 
-    def test_grow_a(self):
-        """ A alone is growth """
+# flux dual, metabolite dual, and flux variables (replaced with function)
+flux_dual = {}
+flux = {}
+metabolite_dual = {}
+for observation_id, observation in phenotype_observations.items():
+    if observation.growth_phenotype: # primal problem when growth is observed
+        flux[observation_id] = {rxn_id:op.Variable(f"v_{observation_id}_{rxn_id}") for rxn_id in rxns}
+    else: # dual problem when no growth is observed
+        flux_dual[observation_id] = {rxn_id:op.Variable(f"r_{observation_id}_{rxn_id}") for rxn_id in rxns}
+        metabolite_dual[observation_id] = {met_id:op.Variable(f"m_{observation_id}_{met_id}") for met_id in mets}
 
-        media = {'EX_A_e': 100}
-        with self.model as m:
-            m.medium = media
-            obj_func = m.slim_optimize()
-            assert obj_func == 100.0
+gibbs_like_constraint = get_steady_state_dual_constraint(cobra_model, phenotype_observations, growth_objective)
 
-    def test_no_grow_4(self):
-        """A + v3 knockout is no-growth"""
-        media = {'EX_A_e': 100}
-        with self.model as m:
-            m.remove_reactions([m.reactions.get_by_id('R_A_to_C')])
-            m.medium = media
-            obj_func = m.slim_optimize()
+# list of z (reaction size)
+reaction_indicator = {rxn_id:op.Variable(f"z_{rxn_id}", type="binary") for rxn_id in rxns}
 
-            assert obj_func == 0.0
+# list of r (no growth)
+flux_dual = {rxn_id:op.Variable(f"r_nogrowth_{rxn_id}") for rxn_id in rxns}
 
-    def test_no_grow_5(self):
-        """A + E + v3 knockout is growth"""
+# list of v (growth)
+flux = {rxn_id:op.Variable(f"v_growth_{rxn_id}") for rxn_id in rxns}
 
-        media = {
-            'EX_A_e': 100,
-            'EX_E_e': 100
-        }
-        with self.model as m:
-            m.remove_reactions([m.reactions.get_by_id('R_A_to_C')])
-            m.medium = media
-            obj_func = m.slim_optimize()
-            assert obj_func > 0.0
+# list of m (metabolite size)
+metabolite_dual = {met_id:op.Variable(f"m_nogrowth_{met_id}") for met_id in mets}
+
+# # list of e_c (reaction size)
+
+
+# TODO: Run this
+def test_get_steady_state_dual_constraint(model, phenotype_observations, growth_objective):
+    actual_constraint = get_steady_state_dual_constraint(model, phenotype_observations, growth_objective)
+    expected_constraint = {}
+    assert actual_constraint == expected_constraint 
+
+
+# tests needed
+
+# dual flux variable constraint (r_nogrowth)
+
+# steady state flux constraint (Sv=0)
+    
+# flux variable constraint (v_growth)
+    
+# reaction constraints (z = 1 for import reactions?)
