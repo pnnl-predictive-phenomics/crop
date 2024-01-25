@@ -2,7 +2,6 @@ import pytest
 import pandas as pd
 import optlang as op
 
-
 import crop
 from crop import PhenotypeObservation
 from crop import get_steady_state_dual_constraint
@@ -103,20 +102,41 @@ metabolite_dual = {met_id:op.Variable(f"m_nogrowth_{met_id}") for met_id in mets
 
 # # list of e_c (reaction size)
 
+### Tests
 
 # TODO: Run this
 def test_get_steady_state_dual_constraint(model, phenotype_observations, growth_objective):
-    actual_constraint = get_steady_state_dual_constraint(model, phenotype_observations, growth_objective)
+    actual_constraint = get_steady_state_dual_constraint(model, 
+                                                         phenotype_observations, 
+                                                         growth_objective)
     expected_constraint = {}
     assert actual_constraint == expected_constraint 
 
 
 # tests needed
 
+# test decision variable generation
+    
+# test flux bounds function(s)
+    
+# test PhenotypeObservation data class
+    
+# test model_from_stoich_matrix
+    
+# test ConsistentReproductionOfPhenotype class
+
 # dual flux variable constraint (r_nogrowth)
+def test_get_dual_flux_variable_constraint():
+    pass
 
 # steady state flux constraint (Sv=0)
-    
+def test_steady_state_flux_constraint():
+    pass 
+
 # flux variable constraint (v_growth)
+def test_flux_constraint():
+    pass
     
 # reaction constraints (z = 1 for import reactions?)
+def test_reaction_constraints():
+    pass
