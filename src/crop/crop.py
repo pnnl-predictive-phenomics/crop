@@ -78,3 +78,4 @@ def generate_decision_variables(model, phenotype_observations):
         else: # dual problem when no growth is observed
             flux_dual[observation_id] = {rxn.id:op.Variable(f"r_{observation_id}_{rxn.id}") for rxn in model.reactions}
             metabolite_dual[observation_id] = {met.id:op.Variable(f"m_{observation_id}_{met.id}") for met in model.metabolites}
+    return flux, flux_dual, metabolite_dual
