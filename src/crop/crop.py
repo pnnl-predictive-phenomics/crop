@@ -27,18 +27,18 @@ def model_from_stoich_matrix(
     S: pd.DataFrame,
     name: str,
     obj: dict[str, int],
-    lower_flux_bound: dict[str, float],
-    upper_flux_bound: dict[str, float],
+    lower_flux_bounds: dict[str, float],
+    upper_flux_bounds: dict[str, float],
 ) -> cb.core.model.Model:
     """Creates a cobra model from a stoichiometric matrix."""
+    # do we need to set the boundary conditions (source and sink)?
     model = cb.core.model.Model(name)
     model.add_reactions(
         [
             Reaction(
-                rxn_id,
-                lower_bound=lower_flux_bound[rxn_id],
-                upper_bound=upper_flux_bound[rxn_id],
-                obj=obj[rxn_id],
+                id = rxn_id,
+                lower_bound=lower_flux_bounds[rxn_id],
+                upper_bound=upper_flux_bounds[rxn_id]
             )
             for rxn_id in S.columns
         ]
@@ -46,11 +46,13 @@ def model_from_stoich_matrix(
     for rxn in model.reactions:
         rxn.add_metabolites(
             {
-                Metabolite(met_id): stoichiometry
+                Metabolite(met_id, compartment='int'): stoichiometry
                 for met_id, stoichiometry in S[rxn.id].to_dict().items()
                 if stoichiometry != 0
             }
         )
+        rxn.objective_coefficient = obj[rxn.id]
+
     return model
 
 
