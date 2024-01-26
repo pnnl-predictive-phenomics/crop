@@ -9,6 +9,14 @@ from crop import get_steady_state_dual_constraint
 from crop import model_from_stoich_matrix
 from crop import generate_decision_variables
 
+# steps
+# 1. port ABC toy model into COBRA model and test it (metabolites, S, etc)
+# 2. load and validate 'observations' using dataclass
+# 3. generate and validate constraints for CROP problem 
+# 4. generate and validate predictions from CROP 
+
+# note: might be easier to start w/ one condition and FBA constraints first
+#       then move to multiple conditions and full MILP (2 test casesß)
 
 ### fixtures for testing 
 
