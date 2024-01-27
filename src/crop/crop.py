@@ -56,18 +56,6 @@ def model_from_stoich_matrix(
     return model
 
 
-# TODO: finish and test
-class ConsistentReproductionOfPhenotype:
-    """Adding and removing reactions based on phenotype observations."""
-
-    def __init__(self, model: cb.core.model.Model, phenotypes: dict[str, PhenotypeObservation]):
-        self.model = model
-        self.phenotypes = phenotypes
-
-    def create_problem(self):
-        """Create an OptLang representation of the CROP problem."""
-        pass
-
 
 # TODO: finish and test
 def generate_flux_bounds_from_growth_observation(phenotype_observation: PhenotypeObservation):
@@ -80,7 +68,6 @@ def generate_flux_bounds_from_growth_observation(phenotype_observation: Phenotyp
 def generate_flux_dual_bounds_from_nogrowth_observation(
     phenotype_observation: PhenotypeObservation,
 ):
-    #
     # go through knockouts
     pass
 
@@ -126,3 +113,16 @@ def generate_decision_variables(model, phenotype_observations):
                 met.id: op.Variable(f"m_{observation_id}_{met.id}") for met in model.metabolites
             }
     return flux, flux_dual, metabolite_dual
+
+
+# TODO: finish and test
+class ConsistentReproductionOfPhenotype:
+    """Adding and removing reactions based on phenotype observations."""
+
+    def __init__(self, model: cb.core.model.Model, phenotypes: dict[str, PhenotypeObservation]):
+        self.model = model
+        self.phenotypes = phenotypes
+
+    def create_problem(self):
+        """Create an OptLang representation of the CROP problem."""
+        pass

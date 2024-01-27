@@ -19,6 +19,7 @@ from .fixtures import (
     growth_objective,
     metabolite_dual,
     flux_dual,
+    flux,
     metabolite_equal,
     reaction_equal,
     constraint_equal
@@ -55,14 +56,16 @@ def test_cobra_model( expected_model:cb.core.model.Model, actual_model:cb.core.m
     )
 
 
-def test_get_steady_state_dual_constraints(expected_model,
-                                          actual_model, 
-                                          phenotype_observations, 
-                                          growth_objective, 
-                                          metabolite_dual, 
-                                          flux_dual
+def test_get_steady_state_dual_constraints(expected_model:cb.core.model.Model,
+                                          actual_model:cb.core.model.Model, 
+                                          phenotype_observations:dict[str,PhenotypeObservation], 
+                                          growth_objective:dict[float,str], 
+                                          metabolite_dual:dict[str,op.Variable], 
+                                          flux_dual:dict[str,op.Variable]
                                           ):
     """Test getting the dual steady state flux variable constraint (i.e., :math:`S^Tm + e_{C\rightarrow} = r_{nogrowth}`)"""
+    # get constraint expressions dict from actual model 
+    # compare with expected model expressions
     raise NotImplementedError
 
 
@@ -102,7 +105,7 @@ def test_get_fixed_reaction_constraints(expected_model,
                                           growth_objective, 
                                           flux
                                         ):
-    "Testing getting the fixed reaction constraints (i.e., z=1 for A_SRC->A_int)"
+    """Testing getting the fixed reaction constraints (i.e., z=1 for A_SRC->A_int)"""
     raise NotImplementedError
 
 
@@ -111,31 +114,22 @@ def get_CROP_predictions(expected_model,
                         phenotype_observations, 
                         growth_objective
                         ):
-    "Test that CROP removes the correct reactions for the ABC toy model 3 system"
+    """Test that CROP removes the correct reactions for the ABC toy model 3 system. 
+       Current model has A-->B reaction
+       True model doesn't have A-->B reaction
+
+       Conditions
+       1. observe growth with A in media but not B
+       2. observe growth with B in media but not A
+       3. observe no growth with A in media but not B - with a knockout for A-->C
+       4. observe growth with B in the media but not A - with a knockout for A-->C
+
+       We expect CROP to remove A-->B reaction (z=0 for A-->B reaction)
+    """
     raise NotImplementedError
 
 
 
-
-# # steady state flux constraint (Sv_growth=0)
-# def test_steady_state_flux_constraint():
-#     actual = ...  # get optlang steady state flux constraint for ABC toy model 3
-#     expected = ...  # steady state flux constraints for ABC toy model 3
-#     raise NotImplementedError
-
-
-# # flux variable constraint (0<=v_growth_i<=U_growth_i*z_i ...)
-# def test_flux_constraint():
-#     actual = ...  # get optlang flux constraints for ABC toy model 3
-#     expected = ...  # flux constraints for ABC toy model 3
-#     raise NotImplementedError
-
-
-# # reaction constraints (z = 1 for import reactions)
-# def test_reaction_constraints():
-#     actual = ...  # get optlang reaction selector constraints for ABC toy model 3
-#     expected = ...  # reaction selector constraints for ABC toy model 3
-#     raise NotImplementedError
 
 
 # # mixed integer test

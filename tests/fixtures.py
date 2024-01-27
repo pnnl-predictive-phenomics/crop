@@ -123,6 +123,21 @@ def flux_dual():
     flux_dual = {rxn_id:op.Variable(f"r_nogrowth_{rxn_id}") for rxn_id in rxns}
     return flux_dual
 
+@pytest.fixture
+def flux():
+    S_index = ['A_int', 'B_int', 'C_int']
+    S_dict = {'A_SRC->A_int': [1,0,0],
+            'A_int->B_int': [-1,1,0],
+            'B_int->C_int': [0,-1,1],
+            'C_int->C_SNK': [0,0,-1],
+            'A_int->C_int': [-1,0,1],
+            'B_SRC->B_int': [0,1,0],
+            }
+    S_table = pd.DataFrame( S_dict ,index=S_index)
+    mets, rxns = S_table.index, S_table.columns
+    flux = {rxn_id:op.Variable(f"v_growth_{rxn_id}") for rxn_id in rxns}
+    return flux
+
 
 def metabolite_equal(expected:cb.core.Metabolite, 
                      actual:cb.core.Metabolite, 
