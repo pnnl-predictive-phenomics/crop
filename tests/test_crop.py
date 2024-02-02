@@ -109,7 +109,11 @@ def test_get_fixed_reaction_constraints(expected_model,
     raise NotImplementedError
 
 
-def get_CROP_predictions(expected_model,
+def test_generate_decision_variables():
+    raise NotImplementedError
+
+
+def test_CROP_predictions(expected_model,
                         actual_model, 
                         phenotype_observations, 
                         growth_objective
