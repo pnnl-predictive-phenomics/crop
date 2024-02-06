@@ -81,7 +81,7 @@ def get_steady_state_dual_constraint(
     for observation_id, observation in phenotype_observations.items():
         if not observation.growth_phenotype:
             for reaction in model.reactions:
-                constraint[f"Gibbs_{reaction.id}"] = Constraint(
+                constraint[f"steady_state_dual_{reaction.id}"] = Constraint(
                     sum(
                         stoichiometry * metabolite_dual[observation_id][met_id]
                         for met_id, stoichiometry in reaction.metabolites

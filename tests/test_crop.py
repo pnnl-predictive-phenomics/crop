@@ -65,8 +65,12 @@ def test_get_steady_state_dual_constraints(expected_model:cb.core.model.Model,
                                           ):
     """Test getting the dual steady state flux variable constraint (i.e., :math:`S^Tm + e_{C\rightarrow} = r_{nogrowth}`)"""
     # get constraint expressions dict from actual model 
+    actual_constraint = get_steady_state_dual_constraint(
+        actual_model, phenotype_observations, growth_objective, metabolite_dual, flux_dual
+    )
+    expected_constraint = None # fix
     # compare with expected model expressions
-    raise NotImplementedError
+    assert actual_constraint == expected_constraint 
 
 
 def test_get_dual_flux_variable_constraints(expected_model,
@@ -132,7 +136,7 @@ def test_CROP_predictions(expected_model,
     """
     raise NotImplementedError
 
-
+# also, want different grow/ no grow and knockout combinations
 
 
 
