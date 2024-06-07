@@ -36,9 +36,9 @@ def model_from_stoich_matrix(
     model.add_reactions(
         [
             Reaction(
-                id = rxn_id,
+                id=rxn_id,
                 lower_bound=lower_flux_bounds[rxn_id],
-                upper_bound=upper_flux_bounds[rxn_id]
+                upper_bound=upper_flux_bounds[rxn_id],
             )
             for rxn_id in S.columns
         ]
@@ -46,7 +46,7 @@ def model_from_stoich_matrix(
     for rxn in model.reactions:
         rxn.add_metabolites(
             {
-                Metabolite(met_id, compartment='int'): stoichiometry
+                Metabolite(met_id, compartment="int"): stoichiometry
                 for met_id, stoichiometry in S[rxn.id].to_dict().items()
                 if stoichiometry != 0
             }
@@ -54,7 +54,6 @@ def model_from_stoich_matrix(
         rxn.objective_coefficient = obj[rxn.id]
 
     return model
-
 
 
 # TODO: finish and test

@@ -1,8 +1,8 @@
 import cobra as cb
 import optlang as op
-from optlang import Variable
 import pandas as pd
 import pytest
+from optlang import Variable
 
 import crop
 from crop import (
@@ -13,18 +13,17 @@ from crop import (
 )
 
 from .fixtures import (
-    expected_model,
     actual_model,
-    phenotype_observations,
+    constraint_equal,
+    expected_model,
+    flux,
+    flux_dual,
     growth_objective,
     metabolite_dual,
-    flux_dual,
-    flux,
     metabolite_equal,
+    phenotype_observations,
     reaction_equal,
-    constraint_equal
 )
-
 
 # steps
 # 1. port ABC toy model into COBRA model and test it (metabolites, S, etc)
@@ -36,79 +35,72 @@ from .fixtures import (
 #       then move to multiple conditions and full MILP (2 test cases)
 
 
-
 ### COBRA model tests
-def test_cobra_model( expected_model:cb.core.model.Model, actual_model:cb.core.model.Model):
+def test_cobra_model(expected_model: cb.core.model.Model, actual_model: cb.core.model.Model):
     """Test that actual cobra model matches expected cobra model - for ABC toy model 3"""
 
     # test metabolites match
     for expected_metabolite in expected_model.metabolites:
-        assert metabolite_equal(expected_metabolite,actual_model.metabolites.get_by_id(expected_metabolite.id) )
-    
+        assert metabolite_equal(
+            expected_metabolite, actual_model.metabolites.get_by_id(expected_metabolite.id)
+        )
+
     # test reactions match
     for expected_reaction in expected_model.reactions:
-        assert reaction_equal(expected_reaction,actual_model.reactions.get_by_id(expected_reaction.id) )
-    
+        assert reaction_equal(
+            expected_reaction, actual_model.reactions.get_by_id(expected_reaction.id)
+        )
+
     # check stoichiometry
     pd.testing.assert_frame_equal(
-        cb.util.array.create_stoichiometric_matrix(actual_model, array_type='DataFrame'),
-        cb.util.array.create_stoichiometric_matrix(expected_model, array_type='DataFrame')
+        cb.util.array.create_stoichiometric_matrix(actual_model, array_type="DataFrame"),
+        cb.util.array.create_stoichiometric_matrix(expected_model, array_type="DataFrame"),
     )
 
 
-def test_get_steady_state_dual_constraints(expected_model:cb.core.model.Model,
-                                          actual_model:cb.core.model.Model, 
-                                          phenotype_observations:dict[str,PhenotypeObservation], 
-                                          growth_objective:dict[float,str], 
-                                          metabolite_dual:dict[str,op.Variable], 
-                                          flux_dual:dict[str,op.Variable]
-                                          ):
+def test_get_steady_state_dual_constraints(
+    expected_model: cb.core.model.Model,
+    actual_model: cb.core.model.Model,
+    phenotype_observations: dict[str, PhenotypeObservation],
+    growth_objective: dict[float, str],
+    metabolite_dual: dict[str, op.Variable],
+    flux_dual: dict[str, op.Variable],
+):
     """Test getting the dual steady state flux variable constraint (i.e., :math:`S^Tm + e_{C\rightarrow} = r_{nogrowth}`)"""
-    # get constraint expressions dict from actual model 
+    # get constraint expressions dict from actual model
     actual_constraint = get_steady_state_dual_constraint(
         actual_model, phenotype_observations, growth_objective, metabolite_dual, flux_dual
     )
-    expected_constraint = None # fix
+    expected_constraint = None  # fix
     # compare with expected model expressions
-    assert actual_constraint == expected_constraint 
+    assert actual_constraint == expected_constraint
 
 
-def test_get_dual_flux_variable_constraints(expected_model,
-                                          actual_model, 
-                                          phenotype_observations, 
-                                          growth_objective, 
-                                          flux_dual
-                                          ):
+def test_get_dual_flux_variable_constraints(
+    expected_model, actual_model, phenotype_observations, growth_objective, flux_dual
+):
     """Test getting the dual flux constraints (i.e., LB <= r_nogrowth <= UB)"""
     raise NotImplementedError
 
 
-def test_get_steady_state_flux_constraints(expected_model,
-                                          actual_model, 
-                                          phenotype_observations, 
-                                          growth_objective, 
-                                          flux
-                                          ):
-    """Test getting the steady state flux constraints (i.e., Sv=0) """
+def test_get_steady_state_flux_constraints(
+    expected_model, actual_model, phenotype_observations, growth_objective, flux
+):
+    """Test getting the steady state flux constraints (i.e., Sv=0)"""
     raise NotImplementedError
 
-def test_get_flux_constraints(expected_model,
-                                actual_model, 
-                                phenotype_observations, 
-                                growth_objective, 
-                                flux
-                                ):
-    """Test getting the flux constraints (i.e., LB <= v_growth <= UB) """
+
+def test_get_flux_constraints(
+    expected_model, actual_model, phenotype_observations, growth_objective, flux
+):
+    """Test getting the flux constraints (i.e., LB <= v_growth <= UB)"""
     raise NotImplementedError
 
 
 # z = 1 for A, B
-def test_get_fixed_reaction_constraints(expected_model,
-                                          actual_model, 
-                                          phenotype_observations, 
-                                          growth_objective, 
-                                          flux
-                                        ):
+def test_get_fixed_reaction_constraints(
+    expected_model, actual_model, phenotype_observations, growth_objective, flux
+):
     """Testing getting the fixed reaction constraints (i.e., z=1 for A_SRC->A_int)"""
     raise NotImplementedError
 
@@ -117,27 +109,23 @@ def test_generate_decision_variables():
     raise NotImplementedError
 
 
-def test_CROP_predictions(expected_model,
-                        actual_model, 
-                        phenotype_observations, 
-                        growth_objective
-                        ):
-    """Test that CROP removes the correct reactions for the ABC toy model 3 system. 
-       Current model has A-->B reaction
-       True model doesn't have A-->B reaction
+def test_CROP_predictions(expected_model, actual_model, phenotype_observations, growth_objective):
+    """Test that CROP removes the correct reactions for the ABC toy model 3 system.
+    Current model has A-->B reaction
+    True model doesn't have A-->B reaction
 
-       Conditions
-       1. observe growth with A in media but not B
-       2. observe growth with B in media but not A
-       3. observe no growth with A in media but not B - with a knockout for A-->C
-       4. observe growth with B in the media but not A - with a knockout for A-->C
+    Conditions
+    1. observe growth with A in media but not B
+    2. observe growth with B in media but not A
+    3. observe no growth with A in media but not B - with a knockout for A-->C
+    4. observe growth with B in the media but not A - with a knockout for A-->C
 
-       We expect CROP to remove A-->B reaction (z=0 for A-->B reaction)
+    We expect CROP to remove A-->B reaction (z=0 for A-->B reaction)
     """
     raise NotImplementedError
 
-# also, want different grow/ no grow and knockout combinations
 
+# also, want different grow/ no grow and knockout combinations
 
 
 # # mixed integer test
