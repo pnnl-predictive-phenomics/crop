@@ -38,7 +38,7 @@
     </a>
 </p>
 
-Consistent Reproduction of Phenotype (CROP) is an mixed integer linear programming (MILP) algorithm for finding reactions to remove from a model to improve the prediction of no-growth phenotypes while ensuring that correclty predicted growth phenotypes are still preserved. 
+Consistent Reproduction of Phenotype (CROP) is an mixed integer linear programming (MILP) algorithm for finding reactions to remove from a model to improve the prediction of no-growth phenotypes while ensuring that correctly predicted growth phenotypes are still preserved. 
 
 ## 💪 Getting Started
 
